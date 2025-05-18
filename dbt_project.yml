@@ -6,6 +6,9 @@ name: 'UdemyDataPipeline'
 version: '1.0.0'
 config-version: 2
 
+dbt-cloud:
+    project-id: 70471823469604
+
 # This setting configures which "profile" dbt uses for this project.
 profile: 'default'
 
@@ -37,7 +40,11 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 models:
   UdemyDataPipeline:
-    # Applies to all files under models/example/
     staging:
-      +materialized: table
+      +materialized: view
+      +schema: "silver"
       +database: "ALUMNO5_DEV_SILVER_DB"
+    # marts:
+    #   +materialized: table
+    #   +schema: "gold"
+    #   +database: "ALUMNO5_DEV_GOLD_DB"

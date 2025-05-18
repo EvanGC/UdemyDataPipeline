@@ -1,0 +1,175 @@
+# File: models/sources.yml
+version: 2
+
+sources:
+  - name: bronze
+    description: "CSV crudos de la plataforma de cursos online"
+    schema: bronze
+    database: "ALUMNO5_DEV_BRONZE_DB"
+
+    quoting:
+      database: false
+      schema: false
+      identifier: false
+
+    tables:
+      - name: users
+        description: "Usuarios registrados"
+        loaded_at_field: updated_at
+        columns:
+          - name: user_id
+            tests:
+              - not_null
+              - unique
+          - name: email
+          - name: full_name
+          - name: signup_date
+          - name: gender
+          - name: country
+          - name: age
+          - name: education_level
+          - name: employment_status
+          - name: interests
+          - name: marketing_source
+          - name: is_premium
+          - name: created_at
+          - name: updated_at
+          
+      - name: instructors
+        description: "Instructores de los cursos"
+        loaded_at_field: updated_at
+        columns:
+          - name: instructor_id
+            tests:
+              - not_null
+              - unique
+          - name: full_name
+          - name: expertise
+          - name: rating
+          - name: years_of_experience
+          - name: verified
+          - name: country
+          - name: created_at
+          - name: updated_at
+          
+      - name: courses
+        description: "Catálogo de cursos disponibles"
+        loaded_at_field: updated_at
+        columns:
+          - name: course_id
+            tests:
+              - not_null
+              - unique
+          - name: category
+          - name: level
+          - name: duration_hours
+          - name: language
+          - name: instructor_id
+          - name: price
+          - name: release_date
+          - name: is_certified
+          - name: updated_at
+
+      - name: enrollments
+        description: "Inscripciones de usuarios a cursos"
+        loaded_at_field: updated_at
+        columns:
+          - name: enrollment_id
+            tests:
+              - not_null
+              - unique
+          - name: user_id
+          - name: course_id
+          - name: enrollment_date
+          - name: source
+          - name: is_trial
+          - name: completed
+          - name: updated_at
+
+      - name: completitions
+        description: "Completaciones de cursos"
+        loaded_at_field: completion_date
+        columns:
+          - name: completion_id
+            tests:
+              - not_null
+              - unique
+          - name: user_id
+          - name: course_id
+          - name: completion_date
+          - name: score
+          - name: time_to_complete_days
+
+      - name: feedbacks
+        description: "Valoraciones y comentarios de usuarios"
+        loaded_at_field: updated_at
+        columns:
+          - name: feedback_id
+            tests:
+              - not_null
+              - unique
+          - name: user_id
+          - name: course_id
+          - name: rating
+          - name: submitted_at
+          - name: helpful_votes
+          - name: created_at
+          - name: updated_at
+
+      - name: campaigns
+        description: "Datos de campañas de marketing"
+        loaded_at_field: updated_at
+        columns:
+          - name: campaign_id
+            tests:
+              - not_null
+              - unique
+          - name: campaign_name
+          - name: start_date
+          - name: end_date
+          - name: budget_usd
+          - name: platform
+          - name: target_audience
+          - name: cta
+          - name: impressions
+          - name: clicks
+          - name: signups
+          - name: enrollments
+          - name: created_at
+          - name: updated_at
+
+      - name: user_interactions
+        description: "Eventos de interacción de usuarios"
+        loaded_at_field: created_at
+        columns:
+          - name: interaction_id
+            tests:
+              - not_null
+              - unique
+          - name: user_id
+          - name: event_type
+          - name: course_id
+          - name: timestamp
+          - name: device_type
+          - name: location
+          - name: referral_source
+          - name: session_duration_seconds
+          - name: session_id
+          - name: created_at
+          - name: updated_at
+          - name: event_category
+          
+      - name: views
+        description: "Vistas de páginas de cursos con detalle de duración"
+        loaded_at_field: view_date
+        columns:
+          - name: view_id
+            tests:
+              - not_null
+              - unique
+          - name: user_id
+          - name: course_id
+          - name: view_date
+          - name: duration_seconds
+          - name: from_landing_page
+          - name: session_id

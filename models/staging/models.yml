@@ -1,0 +1,131 @@
+
+version: 2
+
+models:
+  - name: stg_users
+    description: "Usuarios crudos normalizados y PII enmascarada"
+    columns:
+      - name: user_id
+        description: "Clave primaria del usuario"
+        tests:
+          - not_null
+          - unique
+      - name: email
+        description: "Email en minúsculas"
+        tests:
+          - not_null
+      - name: pseudonym
+        description: "Pseudónimo para anonimizar full_name"
+        tests:
+          - not_null
+      - name: signup_date
+        description: "Fecha de registro del usuario"
+        tests:
+          - not_null
+      - name: interests
+        description: "Intereses del usuario en texto"
+      - name: marketing_source
+        description: "Fuente de marketing"
+      - name: is_premium
+        description: "Flag de suscripción premium"
+        tests:
+          - accepted_values:
+              values: [true, false]
+
+  - name: stg_instructors
+    description: "Instructores crudos con parseo de tipos"
+    columns:
+      - name: instructor_id
+        tests:
+          - not_null
+          - unique
+      - name: full_name
+      - name: expertise
+      - name: rating
+      - name: years_of_experience
+      - name: verified
+      - name: country
+  - name: stg_courses
+    description: "Cursos crudos con parseo de fechas"
+    columns:
+      - name: course_id
+        tests:
+          - not_null
+          - unique
+      - name: title
+      - name: category
+      - name: level
+      - name: instructor_id
+      - name: price
+      - name: start_date
+      - name: end_date
+
+  - name: stg_enrollments
+    description: "Inscripciones normalizadas"
+    columns:
+      - name: enrollment_id
+        tests:
+          - not_null
+          - unique
+      - name: enrollment_date
+      - name: enrollment_source
+      - name: is_trial
+      - name: completed
+
+  - name: stg_completitions
+    description: "Completaciones de cursos con métricas"
+    columns:
+      - name: completion_id
+        tests:
+          - not_null
+          - unique
+      - name: completion_date
+      - name: score
+      - name: time_to_complete_days
+
+  - name: stg_feedbacks
+    description: "Valoraciones de usuarios"
+    columns:
+      - name: feedback_id
+        tests:
+          - not_null
+          - unique
+      - name: rating
+      - name: votes
+      - name: created_at
+
+  - name: stg_campaigns
+    description: "Campañas de marketing con parseo de fechas"
+    columns:
+      - name: campaign_id
+        tests:
+          - not_null
+          - unique
+      - name: name
+      - name: budget
+      - name: impressions
+      - name: start_date
+      - name: end_date
+
+  - name: stg_user_interactions
+    description: "Eventos de interacción de usuarios"
+    columns:
+      - name: session_id
+        tests:
+          - not_null
+          - unique
+      - name: event_type
+      - name: device_type
+      - name: event_category
+      - name: event_timestamp
+
+  - name: stg_views
+    description: "Vistas de páginas de cursos con detalle de duración"
+    columns:
+      - name: view_id
+        tests:
+          - not_null
+          - unique
+      - name: view_date
+      - name: duration_seconds
+      - name: from_landing_page
