@@ -1,0 +1,234 @@
+version: 2
+
+models:
+
+  - name: int_enrollments_expanded
+    description: |
+      Eventos de inscripción con todos los atributos propios:
+      - Campos comunes: event_sk, event_id, user_id, course_id, event_timestamp, event_type
+      - Atributos de enrollment: enrollment_timestamp, enrollment_source, enrollment_is_trial, enrollment_completed, enrollment_updated_at, campaign_id
+    columns:
+      - name: event_sk
+        description: "Clave subrogada del evento (desde base_events → stg_events)"
+        tests:
+          - not_null
+          - unique
+      - name: event_id
+        description: "ID original de la inscripción"
+        tests:
+          - not_null
+      - name: user_id
+        description: "ID del usuario que se inscribió"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_users')
+              field: user_id
+      - name: course_id
+        description: "ID del curso inscrito"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_courses')
+              field: course_id
+      - name: event_timestamp
+        description: "Fecha/hora genérica del evento"
+        tests:
+          - not_null
+      - name: event_type
+        description: "Tipo de evento (siempre 'enrollment' aquí)"
+        tests:
+          - accepted_values:
+              values: ['enrollment']
+      - name: enrollment_timestamp
+        description: "Fecha/hora de la inscripción original"
+        tests:
+          - not_null
+      - name: enrollment_source
+        description: "Origen de la inscripción (p.ej. 'web', 'mobile')"
+      - name: enrollment_is_trial
+        description: "Flag si la inscripción es tipo trial"
+        tests:
+          - accepted_values:
+              values: [true, false]
+      - name: enrollment_completed
+        description: "Flag si el usuario completó o no el curso tras inscripción"
+        tests:
+          - accepted_values:
+              values: [true, false]
+      - name: enrollment_updated_at
+        description: "Última actualización del registro de inscripción"
+        tests:
+          - not_null
+      - name: campaign_id
+        description: "ID de campaña asociada a la inscripción"
+        tests:
+          - relationships:
+              to: source('bronze','campaigns')
+              field: campaign_id
+
+  - name: int_completions_expanded
+    description: |
+      Eventos de finalización con atributos:
+      - Campos comunes de evento
+      - Atributos de completion: completion_timestamp, completion_score, completion_time_to_complete_days, completion_created_at
+    columns:
+      - name: event_sk
+        description: "Clave subrogada del evento"
+        tests:
+          - not_null
+          - unique
+      - name: event_type
+        description: "Tipo de evento (siempre 'completion')"
+        tests:
+          - accepted_values:
+              values: ['completion']
+      - name: completion_timestamp
+        description: "Fecha/hora de la finalización original"
+        tests:
+          - not_null
+      - name: completion_score
+        description: "Puntuación obtenida al completar"
+        tests:
+          - not_null
+          - greater_than_or_equal_to:
+              value: 0
+      - name: completion_time_to_complete_days
+        description: "Días transcurridos hasta la finalización"
+      - name: completion_created_at
+        description: "Marca de tiempo de creación del registro de completion"
+        tests:
+          - not_null
+
+  - name: int_views_expanded
+    description: |
+      Eventos de visualización con atributos:
+      - Campos comunes de evento
+      - Atributos de view: view_timestamp, view_duration_seconds, view_from_landing_page, view_session_id
+    columns:
+      - name: event_sk
+        description: "Clave subrogada del evento"
+        tests:
+          - not_null
+          - unique
+      - name: event_type
+        description: "Tipo de evento (siempre 'view')"
+        tests:
+          - accepted_values:
+              values: ['view']
+      - name: view_timestamp
+        description: "Fecha/hora de la visualización"
+        tests:
+          - not_null
+      - name: view_duration_seconds
+        description: "Duración de la vista en segundos"
+        tests:
+          - greater_than_or_equal_to:
+              value: 0
+      - name: view_from_landing_page
+        description: "Flag si la vista fue desde landing page"
+        tests:
+          - accepted_values:
+              values: [true, false]
+      - name: view_session_id
+        description: "ID de sesión de navegación"
+
+  - name: int_feedbacks_expanded
+    description: |
+      Eventos de feedback con atributos:
+      - Campos comunes de evento
+      - Atributos de feedback: feedback_timestamp, feedback_rating, feedback_helpful_votes, feedback_comment, feedback_created_at, feedback_updated_at
+    columns:
+      - name: event_sk
+        description: "Clave subrogada del evento"
+        tests:
+          - not_null
+          - unique
+      - name: event_type
+        description: "Tipo de evento (siempre 'feedback')"
+        tests:
+          - accepted_values:
+              values: ['feedback']
+      - name: feedback_timestamp
+        description: "Fecha/hora del feedback"
+        tests:
+          - not_null
+      - name: feedback_rating
+        description: "Valoración dada por el usuario"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1,2,3,4,5]
+      - name: feedback_helpful_votes
+        description: "Número de votos de 'útil' recibidos"
+        tests:
+          - greater_than_or_equal_to:
+              value: 0
+      - name: feedback_comment
+        description: "Texto del comentario"
+        tests:
+          - not_null
+      - name: feedback_created_at
+        description: "Creación del registro de feedback"
+        tests:
+          - not_null
+      - name: feedback_updated_at
+        description: "Última actualización del registro de feedback"
+        tests:
+          - not_null
+
+  - name: int_interactions_expanded
+    description: |
+      Eventos de interacción con atributos:
+      - Campos comunes de evento
+      - Atributos de interaction: interaction_timestamp, interaction_type, interaction_target_id, interaction_channel, interaction_device_type, interaction_location, interaction_referral_source, interaction_session_duration_seconds, interaction_session_id, interaction_created_at, interaction_updated_at, interaction_event_category
+    columns:
+      - name: event_sk
+        description: "Clave subrogada del evento"
+        tests:
+          - not_null
+          - unique
+      - name: event_type
+        description: "Tipo de evento (siempre 'interaction')"
+        tests:
+          - accepted_values:
+              values: ['interaction']
+      - name: interaction_timestamp
+        description: "Fecha/hora de la interacción"
+        tests:
+          - not_null
+      - name: interaction_type
+        description: "Tipo de interacción (p.ej. 'like', 'share')"
+        tests:
+          - not_null
+      - name: interaction_target_id
+        description: "ID del objeto objetivo de la interacción"
+        tests:
+          - not_null
+      - name: interaction_channel
+        description: "Canal de interacción"
+      - name: interaction_device_type
+        description: "Dispositivo usado en la interacción"
+      - name: interaction_location
+        description: "Ubicación desde donde se realizó la interacción"
+      - name: interaction_referral_source
+        description: "Fuente de referencia previa a la interacción"
+      - name: interaction_session_duration_seconds
+        description: "Duración de la sesión en segundos"
+        tests:
+          - greater_than_or_equal_to:
+              value: 0
+      - name: interaction_session_id
+        description: "ID de sesión asociado"
+      - name: interaction_created_at
+        description: "Creación del registro de interacción"
+        tests:
+          - not_null
+      - name: interaction_updated_at
+        description: "Última actualización del registro de interacción"
+        tests:
+          - not_null
+      - name: interaction_event_category
+        description: "Categoría de evento definida en la source"
+        tests:
+          - not_null
