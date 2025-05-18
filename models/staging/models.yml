@@ -241,7 +241,7 @@ models:
 
       - name: enrollment_updated_at
 
-  - name: stg_completions
+  - name: stg_completitions
     description: |
       Staging de completions: limpia y castea columnas de la source `completions`.
     columns:
@@ -322,7 +322,7 @@ models:
       - name: feedback_created_at
       - name: feedback_updated_at
 
-  - name: stg_user_interactions
+  - name: stg_interactions
     description: |
       Staging de user_interactions: limpia y castea columnas de la source `user_interactions`.
     columns:
