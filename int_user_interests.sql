@@ -1,0 +1,20 @@
+-- with user_completions as (
+--   select
+--     c.user_id,
+--     cr.category,
+--     c.completion_date,
+--     row_number() over (
+--       partition by c.user_id 
+--       order by c.completion_date desc
+--     ) as rn
+--   from {{ ref('stg_completitions') }} as c
+--   join {{ ref('stg_courses') }} as cr
+--     on c.course_id = cr.course_id
+-- )
+
+-- select
+--     user_id,
+--     category as latest_interest,
+--     completion_date as latest_completion_date
+-- from user_completions
+-- where rn = 1
