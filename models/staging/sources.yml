@@ -1,175 +1,261 @@
-# File: models/sources.yml
 version: 2
 
 sources:
   - name: bronze
-    description: "CSV crudos de la plataforma de cursos online"
+    description: "Archivos CSV sin procesar de la plataforma de aprendizaje en línea"
     schema: bronze
     database: "ALUMNO5_DEV_BRONZE_DB"
 
-    quoting:
-      database: false
-      schema: false
-      identifier: false
-
     tables:
       - name: users
-        description: "Usuarios registrados"
+        description: "Información de usuarios registrados en la plataforma"
         loaded_at_field: updated_at
         columns:
           - name: user_id
-            tests:
-              - not_null
-              - unique
+            description: "Identificador único del usuario"
           - name: email
+            description: "Correo electrónico del usuario"
           - name: full_name
+            description: "Nombre completo del usuario"
           - name: signup_date
+            description: "Fecha de registro en la plataforma"
           - name: gender
+            description: "Género del usuario"
           - name: country
+            description: "País de residencia"
           - name: age
+            description: "Edad del usuario"
           - name: education_level
+            description: "Nivel educativo más alto alcanzado"
           - name: employment_status
+            description: "Situación laboral actual"
           - name: interests
+            description: "Áreas de interés del usuario"
           - name: marketing_source
+            description: "Canal por el que conoció la plataforma"
           - name: is_premium
+            description: "Indica si tiene suscripción premium"
           - name: created_at
+            description: "Fecha de creación del registro"
           - name: updated_at
-          
-      - name: instructors
-        description: "Instructores de los cursos"
-        loaded_at_field: updated_at
-        columns:
-          - name: instructor_id
-            tests:
-              - not_null
-              - unique
-          - name: full_name
-          - name: expertise
-          - name: rating
-          - name: years_of_experience
-          - name: verified
-          - name: country
-          - name: created_at
-          - name: updated_at
-          
-      - name: courses
-        description: "Catálogo de cursos disponibles"
-        loaded_at_field: updated_at
-        columns:
-          - name: course_id
-            tests:
-              - not_null
-              - unique
-          - name: category
-          - name: level
-          - name: duration_hours
-          - name: language
-          - name: instructor_id
-          - name: price
-          - name: release_date
-          - name: is_certified
-          - name: updated_at
-
-      - name: enrollments
-        description: "Inscripciones de usuarios a cursos"
-        loaded_at_field: updated_at
-        columns:
-          - name: enrollment_id
-            tests:
-              - not_null
-              - unique
-          - name: user_id
-          - name: course_id
-          - name: enrollment_date
-          - name: source
-          - name: is_trial
-          - name: completed
-          - name: updated_at
+            description: "Fecha de última actualización"
 
       - name: completitions
-        description: "Completaciones de cursos"
+        description: "Registros de finalización de cursos por los usuarios"
         loaded_at_field: completion_date
         columns:
           - name: completion_id
-            tests:
-              - not_null
-              - unique
+            description: "Identificador único del registro de finalización"
           - name: user_id
+            description: "Identificador del usuario que completó el curso"
           - name: course_id
+            description: "Identificador del curso completado"
           - name: completion_date
+            description: "Fecha en que se completó el curso"
           - name: score
+            description: "Calificación final obtenida en el curso"
           - name: time_to_complete_days
+            description: "Días que tomó completar el curso"
 
       - name: feedbacks
-        description: "Valoraciones y comentarios de usuarios"
+        description: "Valoraciones y reseñas de usuarios sobre los cursos"
         loaded_at_field: updated_at
         columns:
           - name: feedback_id
-            tests:
-              - not_null
-              - unique
+            description: "Identificador único de la valoración"
           - name: user_id
+            description: "Usuario que realizó la valoración"
           - name: course_id
+            description: "Curso que fue valorado"
           - name: rating
+            description: "Puntuación asignada al curso (típicamente 1-5)"
           - name: submitted_at
+            description: "Fecha de envío de la valoración"
           - name: helpful_votes
+            description: "Número de usuarios que encontraron útil esta valoración"
           - name: created_at
+            description: "Fecha de creación del registro"
           - name: updated_at
+            description: "Fecha de última actualización"
 
       - name: campaigns
-        description: "Datos de campañas de marketing"
+        description: "Información sobre campañas de marketing"
         loaded_at_field: updated_at
         columns:
           - name: campaign_id
-            tests:
-              - not_null
-              - unique
+            description: "Identificador único de la campaña"
           - name: campaign_name
+            description: "Nombre de la campaña de marketing"
           - name: start_date
+            description: "Fecha de inicio de la campaña"
           - name: end_date
+            description: "Fecha de finalización de la campaña"
           - name: budget_usd
+            description: "Presupuesto asignado en dólares"
           - name: platform
+            description: "Plataforma donde se ejecutó la campaña"
           - name: target_audience
+            description: "Público objetivo de la campaña"
           - name: cta
+            description: "Llamada a la acción utilizada"
           - name: impressions
+            description: "Número de impresiones generadas"
           - name: clicks
+            description: "Número de clics recibidos"
           - name: signups
+            description: "Número de registros generados"
           - name: enrollments
+            description: "Número de inscripciones resultantes"
           - name: created_at
+            description: "Fecha de creación del registro"
           - name: updated_at
+            description: "Fecha de última actualización"
 
       - name: user_interactions
-        description: "Eventos de interacción de usuarios"
+        description: "Registro de interacciones de usuarios en la plataforma"
         loaded_at_field: created_at
         columns:
           - name: interaction_id
-            tests:
-              - not_null
-              - unique
+            description: "Identificador único de la interacción"
           - name: user_id
+            description: "Usuario que realizó la interacción"
           - name: event_type
+            description: "Tipo de evento o interacción"
           - name: course_id
+            description: "Curso relacionado con la interacción"
           - name: timestamp
+            description: "Momento exacto de la interacción"
           - name: device_type
+            description: "Tipo de dispositivo utilizado"
           - name: location
+            description: "Ubicación geográfica del usuario"
           - name: referral_source
+            description: "Fuente de referencia del usuario"
           - name: session_duration_seconds
+            description: "Duración de la sesión en segundos"
           - name: session_id
+            description: "Identificador único de la sesión"
           - name: created_at
+            description: "Fecha de creación del registro"
           - name: updated_at
+            description: "Fecha de última actualización"
           - name: event_category
-          
+            description: "Categoría del evento realizado"
+
       - name: views
-        description: "Vistas de páginas de cursos con detalle de duración"
+        description: "Registro de visualizaciones de páginas de cursos"
         loaded_at_field: view_date
         columns:
           - name: view_id
-            tests:
-              - not_null
-              - unique
+            description: "Identificador único de la visualización"
           - name: user_id
+            description: "Usuario que realizó la visualización"
           - name: course_id
+            description: "Curso visualizado"
           - name: view_date
+            description: "Fecha de la visualización"
           - name: duration_seconds
+            description: "Duración de la visualización en segundos"
           - name: from_landing_page
+            description: "Indica si la vista provino de la página de inicio"
           - name: session_id
+            description: "Identificador de la sesión asociada"
+
+      - name: courses
+        description: "Catálogo de cursos disponibles en la plataforma"
+        loaded_at_field: updated_at
+        columns:
+          - name: course_id
+            description: "Identificador único del curso"
+          - name: title
+            description: "Título del curso"
+          - name: description
+            description: "Descripción detallada del curso"
+          - name: category
+            description: "Categoría o tema principal del curso"
+          - name: subcategory
+            description: "Subcategoría específica del curso"
+          - name: level
+            description: "Nivel de dificultad del curso"
+          - name: language
+            description: "Idioma principal del curso"
+          - name: instructor_id
+            description: "Identificador del instructor que imparte el curso"
+          - name: price_usd
+            description: "Precio del curso en dólares"
+          - name: num_lectures
+            description: "Número total de lecciones"
+          - name: duration_hours
+            description: "Duración total del curso en horas"
+          - name: published_date
+            description: "Fecha de publicación del curso"
+          - name: last_update
+            description: "Última fecha de actualización del contenido"
+          - name: created_at
+            description: "Fecha de creación del registro"
+          - name: updated_at
+            description: "Fecha de última actualización del registro"
+
+      - name: instructors
+        description: "Información de los instructores que imparten cursos"
+        loaded_at_field: updated_at
+        columns:
+          - name: instructor_id
+            description: "Identificador único del instructor"
+          - name: full_name
+            description: "Nombre completo del instructor"
+          - name: email
+            description: "Correo electrónico del instructor"
+          - name: bio
+            description: "Biografía o descripción profesional"
+          - name: expertise
+            description: "Áreas de especialización"
+          - name: years_experience
+            description: "Años de experiencia en la enseñanza"
+          - name: education
+            description: "Formación académica"
+          - name: rating
+            description: "Calificación promedio recibida"
+          - name: total_students
+            description: "Número total de estudiantes"
+          - name: total_courses
+            description: "Número total de cursos publicados"
+          - name: country
+            description: "País de residencia"
+          - name: language
+            description: "Idiomas que domina"
+          - name: created_at
+            description: "Fecha de creación del registro"
+          - name: updated_at
+            description: "Fecha de última actualización"
+
+      - name: enrollments
+        description: "Registro de inscripciones de usuarios en cursos"
+        loaded_at_field: updated_at
+        columns:
+          - name: enrollment_id
+            description: "Identificador único de la inscripción"
+          - name: user_id
+            description: "Identificador del usuario inscrito"
+          - name: course_id
+            description: "Identificador del curso"
+          - name: enrollment_date
+            description: "Fecha de inscripción"
+          - name: price_paid
+            description: "Precio pagado por el curso"
+          - name: payment_method
+            description: "Método de pago utilizado"
+          - name: coupon_used
+            description: "Código de cupón aplicado"
+          - name: discount_amount
+            description: "Monto del descuento aplicado"
+          - name: refunded
+            description: "Indica si se realizó reembolso"
+          - name: refund_date
+            description: "Fecha del reembolso si aplica"
+          - name: created_at
+            description: "Fecha de creación del registro"
+          - name: updated_at
+            description: "Fecha de última actualización"
+
+      

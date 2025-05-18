@@ -1,12 +1,14 @@
-with raw as (
-  select * from {{ source('bronze', 'feedbacks') }}
-)
+{{ config(materialized='view', schema='silver') }}
 
 select
-  raw.feedback_id :: int as feedback_id,
-  raw.user_id :: int as user_id,
-  raw.course_id :: int as course_id,
-  raw.rating :: int as rating,
-  raw.submitted_at as submitted_at,
-  raw.helpful_votes :: int as helpful_votes,
-from raw
+  feedback_id,
+  user_id,
+  course_id,
+  to_timestamp(submitted_at) as feedback_timestamp,
+  rating :: int as feedback_rating,
+  helpful_votes as feedback_helpful_votes,
+  comment_body as feedback_comment,
+  to_timestamp(created_at) as feedback_created_at,
+  to_timestamp(updated_at) as feedback_updated_at
+from {{ source('bronze','feedbacks') }}
+  

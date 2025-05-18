@@ -1,14 +1,13 @@
-with raw as (
-  select * from {{ source('bronze', 'enrollments') }}
-)
+{{ config(materialized='view', schema='silver') }}
 
 select
-  raw.enrollment_id :: int as enrollment_id,
-  raw.user_id :: int as user_id,
-  raw.course_id :: int as course_id,
-  raw.enrollment_date as enrollment_date,
-  raw.source as enrollment_source,
-  raw.is_trial as is_trial,
-  raw.completed as completed,
-  raw.updated_at as updated_at
-from raw
+  enrollment_id,
+  user_id,
+  course_id,
+  to_timestamp(enrollment_date) as enrollment_timestamp,
+  campaign_id,
+  source as enrollment_source,
+  cast(is_trial as boolean) as enrollment_is_trial,
+  cast(completed as boolean) as enrollment_completed,
+  to_timestamp(updated_at) as enrollment_updated_at
+from {{ source('bronze','enrollments') }}

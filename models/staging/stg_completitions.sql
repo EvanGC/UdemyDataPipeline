@@ -1,12 +1,11 @@
-with raw as (
-  select * from {{ source('bronze', 'completitions') }}
-)
+{{ config(materialized='view', schema='silver') }}
 
 select
-  raw.completion_id :: int as completion_id,
-  raw.user_id :: int as user_id,
-  raw.course_id :: int as course_id,
-  raw.completion_date as completion_date,
-  raw.score :: float as score,
-  raw.time_to_complete_days :: int as time_to_complete_days
-from raw
+  completion_id,
+  user_id,
+  course_id,
+  to_timestamp(completion_date) as completion_timestamp,
+  cast(score as float) as completion_score,
+  cast(time_to_complete_days as int) as completion_time_to_complete_days,
+  to_timestamp(completed_at) as completion_created_at
+from {{ source('bronze','completitions') }}

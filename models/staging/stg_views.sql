@@ -1,13 +1,11 @@
-with raw as (
-  select * from {{ source('bronze', 'views') }}
-)
+{{ config(materialized='view', schema='silver') }}
 
 select
-  raw.view_id :: int as view_id,
-  raw.user_id :: int as user_id,
-  raw.course_id :: int as course_id,
-  raw.view_date as view_date,
-  raw.duration_seconds :: int as duration_seconds,
-  raw.from_landing_page as from_landing_page,
-  raw.session_id as session_id
-from raw
+  view_id,
+  user_id,
+  course_id,
+  to_timestamp(view_date) as view_timestamp,
+  cast(duration_seconds as int) as view_duration_seconds,
+  cast(from_landing_page as boolean) as view_from_landing_page,
+  session_id as view_session_id
+from {{ source('bronze','views') }}

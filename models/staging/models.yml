@@ -1,4 +1,4 @@
-
+# File: models/staging/schema.yml
 version: 2
 
 models:
@@ -11,19 +11,19 @@ models:
           - not_null
           - unique
       - name: email
-        description: "Email en minúsculas"
+        description: "Correo electrónico en minúsculas"
         tests:
           - not_null
       - name: pseudonym
-        description: "Pseudónimo para anonimizar full_name"
+        description: "Pseudónimo generado para anonimizar nombre completo"
         tests:
           - not_null
       - name: signup_date
-        description: "Fecha de registro del usuario"
+        description: "Fecha de registro"
         tests:
           - not_null
-      - name: interests
-        description: "Intereses del usuario en texto"
+      - name: interest
+        description: "Interés principal relacionado con cursos completados"
       - name: marketing_source
         description: "Fuente de marketing"
       - name: is_premium
@@ -31,101 +31,329 @@ models:
         tests:
           - accepted_values:
               values: [true, false]
+      - name: created_at
+        description: "Fecha de creación del registro"
+        tests:
+          - not_null
+      - name: updated_at
+        description: "Fecha de última actualización del registro"
+        tests:
+          - not_null
 
   - name: stg_instructors
-    description: "Instructores crudos con parseo de tipos"
+    description: "Instructores con tipos parseados y normalizados"
     columns:
       - name: instructor_id
+        description: "Clave primaria del instructor"
         tests:
           - not_null
           - unique
       - name: full_name
+        description: "Nombre completo"
+        tests:
+          - not_null
       - name: expertise
+        description: "Áreas de experiencia en minúsculas"
       - name: rating
+        description: "Puntuación (0.0 si no evaluado)"
+        tests:
+          - not_null
       - name: years_of_experience
+        description: "Años de experiencia (0 si no informado)"
+        tests:
+          - not_null
       - name: verified
+        description: "Flag de verificado"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
       - name: country
+        description: "País capitalizado"
+      - name: created_at
+        description: "Fecha de creación"
+        tests:
+          - not_null
+      - name: updated_at
+        description: "Fecha de última actualización"
+        tests:
+          - not_null
+
   - name: stg_courses
-    description: "Cursos crudos con parseo de fechas"
+    description: "Cursos con tipos parseados y referencias a instructores"
     columns:
       - name: course_id
+        description: "Clave primaria del curso"
         tests:
           - not_null
           - unique
       - name: title
+        description: "Título del curso"
+        tests:
+          - not_null
       - name: category
+        description: "Categoría del curso"
       - name: level
+        description: "Nivel de dificultad"
       - name: instructor_id
+        description: "Instructor asociado al curso"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_instructors')
+              field: instructor_id
       - name: price
+        description: "Precio del curso"
+      - name: release_date
+        description: "Fecha de lanzamiento"
+      - name: is_certified
+        description: "Flag de certificación"
+      - name: created_at
+        description: "Fecha de creación"
+      - name: updated_at
+        description: "Fecha de última actualización"
+
+
+  - name: stg_campaigns
+    description: "Datos de campañas de marketing"
+    columns:
+      - name: campaign_id
+        description: "Clave primaria de campaña"
+        tests:
+          - not_null
+          - unique
+      - name: campaign_name
+        description: "Nombre de la campaña"
       - name: start_date
+        description: "Fecha de inicio"
       - name: end_date
+        description: "Fecha de fin"
+      - name: budget_usd
+        description: "Presupuesto en USD"
+      - name: platform
+        description: "Plataforma de la campaña"
+      - name: target_audience
+        description: "Audiencia objetivo"
+      - name: cta
+        description: "Call To Action"
+      - name: impressions
+        description: "Impresiones generadas"
+      - name: clicks
+        description: "Clics recibidos"
+      - name: signups
+        description: "Registros obtenidos"
+      - name: enrollments
+        description: "Inscripciones generadas"
+      - name: created_at
+        description: "Fecha de creación"
+      - name: updated_at
+        description: "Fecha de última actualización"
+
+
+  - name: stg_events
+    description: |
+      Staging de eventos: lee de `base_events`, parsea timestamp y deriva atributos,
+      y enriquece con datos de enrollment/campaign.
+    columns:
+      - name: event_sk
+        description: "Clave subrogada del evento."
+        tests:
+          - not_null
+          - unique
+
+      - name: event_id
+        description: "ID original del evento."
+        tests:
+          - not_null
+      - name: user_id
+        description: "ID de usuario."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_users')
+              field: user_id
+
+      - name: course_id
+        description: "ID de curso."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_courses')
+              field: course_id
+
+      - name: event_timestamp
+        description: "Marca de tiempo como TIMESTAMP."
+        tests:
+          - not_null
+      - name: event_date
+        description: "Fecha derivada del evento (día)."
+      - name: event_hour
+        description: "Hora derivada del evento."
+      - name: event_type
+        description: "Tipo de evento."
+        tests:
+          - accepted_values:
+              values: ['enrollment','completion','view','interaction','feedback']
+      - name: event_subtype
+        description: "Subtipo de evento."
+      - name: campaign_id
+        description: "ID de campaña (solo enrollments)."
+      - name: campaign_name
+        description: "Nombre de campaña (solo enrollments)."
 
   - name: stg_enrollments
-    description: "Inscripciones normalizadas"
+    description: |
+      Staging de enrollments: limpia y castea columnas de la source `enrollments`.
     columns:
       - name: enrollment_id
         tests:
           - not_null
           - unique
-      - name: enrollment_date
-      - name: enrollment_source
-      - name: is_trial
-      - name: completed
 
-  - name: stg_completitions
-    description: "Completaciones de cursos con métricas"
+      - name: user_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_users')
+              field: user_id
+
+      - name: course_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_courses')
+              field: course_id
+
+      - name: enrollment_timestamp
+        tests:
+          - not_null
+      - name: campaign_id
+      - name: enrollment_source
+      - name: enrollment_is_trial
+        tests:
+          - accepted_values:
+              values: [true, false]
+
+      - name: enrollment_completed
+        tests:
+          - accepted_values:
+              values: [true, false]
+
+      - name: enrollment_updated_at
+
+  - name: stg_completions
+    description: |
+      Staging de completions: limpia y castea columnas de la source `completions`.
     columns:
       - name: completion_id
         tests:
           - not_null
           - unique
-      - name: completion_date
-      - name: score
-      - name: time_to_complete_days
-
-  - name: stg_feedbacks
-    description: "Valoraciones de usuarios"
-    columns:
-      - name: feedback_id
+      - name: user_id
         tests:
           - not_null
-          - unique
-      - name: rating
-      - name: votes
-      - name: created_at
-
-  - name: stg_campaigns
-    description: "Campañas de marketing con parseo de fechas"
-    columns:
-      - name: campaign_id
+      - name: course_id
         tests:
           - not_null
-          - unique
-      - name: name
-      - name: budget
-      - name: impressions
-      - name: start_date
-      - name: end_date
-
-  - name: stg_user_interactions
-    description: "Eventos de interacción de usuarios"
-    columns:
-      - name: session_id
+      - name: completion_timestamp
         tests:
           - not_null
-          - unique
-      - name: event_type
-      - name: device_type
-      - name: event_category
-      - name: event_timestamp
+      - name: completion_score
+        tests:
+          - not_null
+          - greater_than_or_equal_to:
+              value: 0
+      - name: completion_time_to_complete_days
+      - name: completion_created_at
 
   - name: stg_views
-    description: "Vistas de páginas de cursos con detalle de duración"
+    description: |
+      Staging de views: limpia y castea columnas de la source `views`.
     columns:
       - name: view_id
         tests:
           - not_null
           - unique
-      - name: view_date
-      - name: duration_seconds
-      - name: from_landing_page
+      - name: user_id
+        tests:
+          - not_null
+      - name: course_id
+        tests:
+          - not_null
+      - name: view_timestamp
+        tests:
+          - not_null
+      - name: view_duration_seconds
+        tests:
+          - greater_than_or_equal_to:
+              value: 0
+
+      - name: view_from_landing_page
+        tests:
+          - accepted_values:
+              values: [true, false]
+
+      - name: view_session_id
+
+  - name: stg_feedbacks
+    description: |
+      Staging de feedbacks: limpia y castea columnas de la source `feedbacks`.
+    columns:
+      - name: feedback_id
+        tests:
+          - not_null
+          - unique
+      - name: user_id
+        tests:
+          - not_null
+      - name: course_id
+        tests:
+          - not_null
+      - name: feedback_timestamp
+        tests:
+          - not_null
+      - name: feedback_rating
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1,2,3,4,5]
+      - name: feedback_helpful_votes
+      - name: feedback_comment
+      - name: feedback_created_at
+      - name: feedback_updated_at
+
+  - name: stg_user_interactions
+    description: |
+      Staging de user_interactions: limpia y castea columnas de la source `user_interactions`.
+    columns:
+      - name: interaction_id
+        tests:
+          - not_null
+          - unique
+      - name: user_id
+        tests:
+          - not_null
+      - name: course_id
+        tests:
+          - not_null
+      - name: interaction_timestamp
+        tests:
+          - not_null
+      - name: interaction_type
+        tests:
+          - not_null
+      - name: interaction_target_id
+        tests:
+          - not_null
+      - name: interaction_session_duration_seconds
+        tests:
+          - greater_than_or_equal_to:
+              value: 0
+      - name: interaction_channel
+      - name: interaction_device_type
+      - name: interaction_location
+      - name: interaction_referral_source
+      - name: interaction_session_id
+      - name: interaction_created_at
+      - name: interaction_updated_at
+      - name: interaction_event_category

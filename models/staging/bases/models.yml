@@ -1,0 +1,45 @@
+version: 2
+
+models:
+  - name: base_events
+    description: |
+      Modelo base que consolida todos los eventos (enrollments, completions, views, 
+      user_interactions y feedbacks) en una única tabla raw:
+      - Genera la clave subrogada `event_sk` via codegen.
+      - Normaliza columnas comunes: event_id, user_id, course_id, event_timestamp, event_type, event_subtype.
+    columns:
+      - name: event_sk
+        description: "Clave subrogada generada por codegen sobre los atributos del evento."
+        tests:
+          - not_null
+          - unique
+      - name: event_id
+        description: "ID original del evento en la source."
+        tests:
+          - not_null
+      - name: user_id
+        description: "ID del usuario que generó el evento."
+        tests:
+          - not_null
+          - relationships:
+              to: source('bronze','users')
+              field: users_id
+      - name: course_id
+        description: "ID del curso asociado al evento."
+        tests:
+          - not_null
+          - relationships:
+              to: source('bronze','courses')
+              field: courses_id
+      - name: event_timestamp
+        description: "Marca de tiempo del evento."
+        tests:
+          - not_null
+      - name: event_type
+        description: "Tipo de evento (enrollment, completion, view, interaction, feedback)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['enrollment','completion','view','interaction','feedback']
+      - name: event_subtype
+        description: "Subtipo de evento (solo para interacciones: interaction_type)."
