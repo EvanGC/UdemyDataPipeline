@@ -1,16 +1,21 @@
-with raw as (
-  select * from {{ source('bronze', 'courses') }}
+{{ config(materialized='view', schema='silver') }}
+
+with src as (
+    select
+      course_id as course_id,
+      category,
+      level,
+      cast(duration_hours as float) as duration_hours,
+      language,
+      instructor_id,
+      cast(price as decimal(10,2))  as price,
+      to_date(release_date) as release_date,
+      cast(is_certified as boolean) as is_certified,
+      to_timestamp(updated_at) as updated_at
+    from {{ source('bronze','courses') }}
 )
 
 select
-  course_id :: int as course_id,
-  category as category,
-  level as level,
-  duration_hours :: int as duration_hours,
-  language as language,
-  instructor_id :: int as instructor_id,
-  price :: float as price,
-  release_date as release_date,
-  is_certified as is_certified,
-  updated_at as updated_at
-from raw
+  {{ dbt_utils.generate_surrogate_key(['course_id']) }}  as course_sk,
+  *
+from src

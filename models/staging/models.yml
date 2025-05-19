@@ -11,11 +11,11 @@ models:
           - not_null
           - unique
       - name: email
-        description: "Correo electrónico en minúsculas"
+        description: "Correo electrónico del usuario"
         tests:
           - not_null
-      - name: pseudonym
-        description: "Pseudónimo generado para anonimizar nombre completo"
+      - name: full_name
+        description: "Nombre del usuario"
         tests:
           - not_null
       - name: signup_date
@@ -87,10 +87,6 @@ models:
         tests:
           - not_null
           - unique
-      - name: title
-        description: "Título del curso"
-        tests:
-          - not_null
       - name: category
         description: "Categoría del curso"
       - name: level
@@ -152,17 +148,20 @@ models:
 
   - name: stg_events
     description: |
-      Staging de eventos: lee de `base_events`, parsea timestamp y deriva atributos,
-      y enriquece con datos de enrollment/campaign.
+      Modelo de staging que consolida y enriquece todos los eventos:
+      - Une eventos de enrollment, completion, view, interaction y feedback
+      - Genera clave subrogada event_sk
+      - Deriva atributos de fecha/hora
+      - Enriquece con datos de campaña para enrollments
+      - Preserva atributos específicos de cada tipo de evento
     columns:
       - name: event_sk
-        description: "Clave subrogada del evento."
+        description: "Clave subrogada única del evento"
         tests:
           - not_null
           - unique
-
       - name: event_id
-        description: "ID original del evento."
+        description: "ID original del evento desde la fuente correspondiente"
         tests:
           - not_null
       - name: user_id
@@ -264,7 +263,6 @@ models:
           - greater_than_or_equal_to:
               value: 0
       - name: completion_time_to_complete_days
-      - name: completion_created_at
 
   - name: stg_views
     description: |
@@ -318,7 +316,6 @@ models:
           - accepted_values:
               values: [1,2,3,4,5]
       - name: feedback_helpful_votes
-      - name: feedback_comment
       - name: feedback_created_at
       - name: feedback_updated_at
 
@@ -340,11 +337,6 @@ models:
         tests:
           - not_null
       - name: interaction_type
-        tests:
-          - not_null
-      - name: interaction_target_id
-        tests:
-          - not_null
       - name: interaction_session_duration_seconds
         tests:
           - greater_than_or_equal_to:

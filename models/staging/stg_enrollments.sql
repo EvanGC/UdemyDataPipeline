@@ -5,7 +5,7 @@ select
   user_id,
   course_id,
   to_timestamp(enrollment_date) as enrollment_timestamp,
-  campaign_id,
+  campaign_id :: int as campaign_id,
   source as enrollment_source,
   cast(is_trial as boolean) as enrollment_is_trial,
   cast(completed as boolean) as enrollment_completed,

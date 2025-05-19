@@ -1,15 +1,20 @@
-with raw as (
-  select * from {{ source('bronze', 'instructors') }}
+{{ config(materialized='view', schema='silver') }}
+
+with src as (
+    select
+      instructor_id :: int as instructor_id,
+      full_name,
+      expertise,
+      cast(rating as float) as rating,
+      cast(years_of_experience as integer) as years_of_experience,
+      cast(verified as boolean) as verified,
+      country,
+      to_timestamp(created_at) as created_at,
+      to_timestamp(updated_at) as updated_at
+    from {{ source('bronze','instructors') }}
 )
 
 select
-  instructor_id :: int as instructor_id,
-  full_name as full_name,
-  expertise as expertise,
-  rating as rating,
-  years_of_experience as years_of_experience,
-  verified as verified,
-  country as country,
-  created_at as created_at,
-  updated_at as updated_at
-from raw
+  {{ dbt_utils.generate_surrogate_key(['instructor_id']) }}  as instructor_sk,
+  *
+from src

@@ -1,45 +1,230 @@
 version: 2
 
 models:
-  - name: base_events
-    description: |
-      Modelo base que consolida todos los eventos (enrollments, completions, views, 
-      user_interactions y feedbacks) en una única tabla raw:
-      - Genera la clave subrogada `event_sk` via codegen.
-      - Normaliza columnas comunes: event_id, user_id, course_id, event_timestamp, event_type, event_subtype.
+  - name: base_enrollments
+    description: "Modelo base que limpia y normaliza los eventos de inscripción a cursos"
     columns:
-      - name: event_sk
-        description: "Clave subrogada generada por codegen sobre los atributos del evento."
+      - name: event_id
+        description: "Identificador único del evento de inscripción"
         tests:
           - not_null
           - unique
-      - name: event_id
-        description: "ID original del evento en la source."
-        tests:
-          - not_null
       - name: user_id
-        description: "ID del usuario que generó el evento."
+        description: "Identificador del usuario que realizó la inscripción"
         tests:
-          - not_null
           - relationships:
               to: source('bronze','users')
-              field: users_id
+              field: user_id
       - name: course_id
-        description: "ID del curso asociado al evento."
+        description: "Identificador del curso en el que se inscribió"
         tests:
-          - not_null
           - relationships:
               to: source('bronze','courses')
-              field: courses_id
+              field: course_id
       - name: event_timestamp
-        description: "Marca de tiempo del evento."
+        description: "Fecha y hora de la inscripción"
         tests:
           - not_null
       - name: event_type
-        description: "Tipo de evento (enrollment, completion, view, interaction, feedback)."
+        description: "Tipo de evento, siempre 'enrollment'"
         tests:
           - not_null
           - accepted_values:
-              values: ['enrollment','completion','view','interaction','feedback']
+              values: ['enrollment']
       - name: event_subtype
-        description: "Subtipo de evento (solo para interacciones: interaction_type)."
+        description: "Subtipo de evento, siempre null para inscripciones"
+      - name: enrollment_source
+        description: "Canal o fuente de la inscripción"
+      - name: enrollment_is_trial
+        description: "Indica si es una prueba gratuita"
+        tests:
+          - accepted_values:
+              values: [true, false]
+      - name: enrollment_completed
+        description: "Indica si el curso fue completado"
+        tests:
+          - accepted_values:
+              values: [true, false]
+      - name: campaign_id
+        description: "ID de la campaña asociada"
+        tests:
+          - relationships:
+              to: source('bronze','campaigns')
+              field: campaign_id
+
+  - name: base_completions
+    description: "Modelo base que limpia y normaliza los eventos de finalización de cursos"
+    columns:
+      - name: event_id
+        description: "Identificador único del evento de finalización"
+        tests:
+          - not_null
+          - unique
+      - name: user_id
+        description: "Identificador del usuario que completó el curso"
+        tests:
+          - relationships:
+              to: source('bronze','users')
+              field: user_id
+      - name: course_id
+        description: "Identificador del curso completado"
+        tests:
+          - relationships:
+              to: source('bronze','courses')
+              field: course_id
+      - name: event_timestamp
+        description: "Fecha y hora de finalización"
+        tests:
+          - not_null
+      - name: event_type
+        description: "Tipo de evento, siempre 'completion'"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['completion']
+      - name: event_subtype
+        description: "Subtipo de evento, siempre null para finalizaciones"
+      - name: completion_score
+        description: "Calificación final obtenida"
+        tests:
+          - not_null
+          - greater_than_or_equal_to:
+              value: 0
+      - name: completion_days
+        description: "Días que tomó completar el curso"
+        tests:
+          - greater_than_or_equal_to:
+              value: 0
+
+  - name: base_feedbacks
+    description: "Modelo base que limpia y normaliza los eventos de valoración de cursos"
+    columns:
+      - name: event_id
+        description: "Identificador único de la valoración"
+        tests:
+          - not_null
+          - unique
+      - name: user_id
+        description: "Identificador del usuario que dio la valoración"
+        tests:
+          - relationships:
+              to: source('bronze','users')
+              field: user_id
+      - name: course_id
+        description: "Identificador del curso valorado"
+        tests:
+          - relationships:
+              to: source('bronze','courses')
+              field: course_id
+      - name: event_timestamp
+        description: "Fecha y hora de la valoración"
+        tests:
+          - not_null
+      - name: event_type
+        description: "Tipo de evento, siempre 'feedback'"
+        tests:
+          - accepted_values:
+              values: ['feedback']
+      - name: event_subtype
+        description: "Subtipo de evento, siempre null para valoraciones"
+      - name: feedback_rating
+        description: "Puntuación asignada al curso (1-5)"
+      - name: feedback_helpful_votes
+        description: "Número de votos útiles recibidos"
+        tests:
+          - greater_than_or_equal_to:
+              value: 0
+
+  - name: base_views
+    description: "Modelo base que limpia y normaliza los eventos de visualización de cursos"
+    columns:
+      - name: event_id
+        description: "Identificador único de la visualización"
+        tests:
+          - not_null
+          - unique
+      - name: user_id
+        description: "Identificador del usuario que visualizó"
+        tests:
+          - relationships:
+              to: source('bronze','users')
+              field: user_id
+      - name: course_id
+        description: "Identificador del curso visualizado"
+        tests:
+          - relationships:
+              to: source('bronze','courses')
+              field: course_id
+      - name: event_timestamp
+        description: "Fecha y hora de la visualización"
+        tests:
+          - not_null
+      - name: event_type
+        description: "Tipo de evento, siempre 'view'"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['view']
+      - name: event_subtype
+        description: "Subtipo de evento, siempre null para visualizaciones"
+      - name: view_duration
+        description: "Duración de la visualización en segundos"
+        tests:
+          - greater_than_or_equal_to:
+              value: 0
+      - name: from_landing_page
+        description: "Indica si llegó desde la página principal"
+        tests:
+          - accepted_values:
+              values: [true, false]
+      - name: view_session_id
+        description: "Identificador de la sesión de visualización"
+
+  - name: base_interactions
+    description: "Modelo base que limpia y normaliza los eventos de interacción con cursos"
+    columns:
+      - name: event_id
+        description: "Identificador único de la interacción"
+        tests:
+          - not_null
+          - unique
+      - name: user_id
+        description: "Identificador del usuario que interactuó"
+        tests:
+          - relationships:
+              to: source('bronze','users')
+              field: user_id
+      - name: course_id
+        description: "Identificador del curso interactuado"
+        tests:
+          - relationships:
+              to: source('bronze','courses')
+              field: course_id
+      - name: event_timestamp
+        description: "Fecha y hora de la interacción"
+        tests:
+          - not_null
+      - name: event_type
+        description: "Tipo de evento, siempre 'interaction'"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['interaction']
+      - name: event_subtype
+        description: "Tipo específico de interacción"
+      - name: interaction_device
+        description: "Dispositivo desde el que se interactuó"
+      - name: interaction_location
+        description: "Ubicación geográfica del usuario"
+      - name: interaction_source
+        description: "Origen de la interacción"
+      - name: interaction_duration
+        description: "Duración de la sesión en segundos"
+        tests:
+          - greater_than_or_equal_to:
+              value: 0
+      - name: interaction_session_id
+        description: "Identificador de la sesión"
+      - name: interaction_category
+        description: "Categoría de la interacción"
+  

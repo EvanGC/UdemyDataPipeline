@@ -1,43 +1,80 @@
-{{ config(
-    materialized = 'view',
-    schema = 'silver'
-) }}
+{{ config(materialized='view', schema='silver') }}
 
-with raw as (
-    select
-      event_sk,
-      event_id,
-      user_id,
-      course_id,
-      event_timestamp,
-      event_type,
-      event_subtype
-    from {{ ref('base_events') }}
+with enroll as (
+  select
+    event_id,
+    user_id,
+    course_id,
+    event_timestamp,
+    'enrollment' as event_type,
+    campaign_id
+  from {{ ref('base_enrollments') }}
 ),
 
--- derivamos atributos de fecha/hora
-parsed as (
-    select
-      *,
-      date_trunc('day', event_timestamp)::date as event_date,
-      date_part('hour', event_timestamp) as event_hour
-    from raw
+comp as (
+  select
+    event_id,
+    user_id,
+    course_id,
+    event_timestamp,
+    'completion' as event_type,
+    null as campaign_id
+  from {{ ref('base_completions') }}
 ),
 
--- incorporamos campaña solo en enrollments
-with_campaign as (
-    select
-      p.*,
-      enrl.source as enrollment_source,
-      enrl.is_trial as enrollment_is_trial,
-      enrl.completed as enrollment_completed,
-      cam.campaign_name as campaign_name
-    from parsed p
-    left join {{ source('bronze', 'enrollments') }} as enrl
-      on p.event_type = 'enrollment'
-      and p.event_id = enrl.enrollment_id
-    left join {{ source('bronze', 'campaigns') }} as cam
-      on enrl.campaign_id = cam.campaign_id
+vw as (
+  select
+    event_id,
+    user_id,
+    course_id,
+    event_timestamp,
+    'view' as event_type,
+    null as campaign_id
+  from {{ ref('base_views') }}
+),
+
+fb as (
+  select
+    event_id,
+    user_id,
+    course_id,
+    event_timestamp,
+    'feedback' as event_type,
+    null as campaign_id
+  from {{ ref('base_feedbacks') }}
+),
+
+ui as (
+  select
+    event_id,
+    user_id,
+    course_id,
+    event_timestamp,
+    'interaction' as event_type,
+    null as campaign_id
+  from {{ ref('base_interactions') }}
+),
+
+all_events as (
+  select * from enroll
+  union all select * from comp
+  union all select * from vw
+  union all select * from fb
+  union all select * from ui
 )
 
-select * from with_campaign
+select
+  {{ dbt_utils.generate_surrogate_key([
+      'event_type',
+      'event_id',
+      'user_id',
+      'course_id',
+      'event_timestamp'
+    ]) }} as event_sk,
+  event_type,
+  event_id,
+  user_id,
+  course_id,
+  event_timestamp,
+  campaign_id
+from all_events
