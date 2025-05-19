@@ -12,9 +12,9 @@
 
 select
   user_id,
-  email,
-  full_name,
   signup_date,
+  age,
+  country
   gender,
   marketing_source,
   is_premium,
