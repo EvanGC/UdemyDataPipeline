@@ -42,9 +42,7 @@ models:
   UdemyDataPipeline:
     staging:
       +materialized: view
-      +schema: "silver"
       +database: "ALUMNO5_DEV_SILVER_DB"
-    # marts:
-    #   +materialized: table
-    #   +schema: "gold"
-    #   +database: "ALUMNO5_DEV_GOLD_DB"
+    marts:
+      +materialized: table
+      +database: "ALUMNO5_DEV_GOLD_DB"

@@ -1,0 +1,44 @@
+version: 2
+
+models:
+  - name: fct_user_course_funnel
+    description: |
+      Fact table de embudo por usuario-curso-campaña:
+      - first_enroll_ts: timestamp de la inscripción
+      - first_view_ts: vista tras inscripción
+      - first_completion_ts: finalización tras vista
+      - first_feedback_ts: feedback tras finalización
+      - flags did_enroll, did_view, did_completion, did_feedback
+      - conversion rates:
+          rate_view        = did_view/did_enroll
+          rate_completion  = did_completion/did_view
+          rate_feedback    = did_feedback/did_completion
+    columns:
+      - name: user_id
+        tests:
+          - not_null
+      - name: course_id
+        tests:
+          - not_null
+      - name: campaign_id
+      - name: first_enroll_ts
+        description: "Timestamp de la primera inscripción"
+        tests:
+          - not_null
+      - name: first_view_ts
+        description: "Primera vista tras inscripción"
+      - name: first_completion_ts
+        description: "Primera finalización tras vista"
+      - name: first_feedback_ts
+        description: "Primer feedback tras finalización"
+      - name: did_enroll
+        description: "Flag: siempre 1"
+      - name: did_view
+      - name: did_completion
+      - name: did_feedback
+      - name: rate_view
+        description: "Tasa view/enroll"
+      - name: rate_completion
+        description: "Tasa completion/view"
+      - name: rate_feedback
+        description: "Tasa feedback/completion"
