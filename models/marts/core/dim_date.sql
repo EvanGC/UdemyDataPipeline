@@ -8,7 +8,7 @@ with dates as (
 
 calendar as (
   select
-    date_key,
+    date_key:: date as date_key,
     date_trunc('month', date_key)::date as month,
     date_part('week', date_key) as week_of_year,
     date_part('year', date_key) as year,

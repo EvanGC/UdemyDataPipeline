@@ -5,13 +5,12 @@ with src as (
     user_sk,
     user_id,
     email,
-    full_name,
     signup_date,
     gender,
+    country,
+    age,
     marketing_source,
-    is_premium,
-    created_at,
-    updated_at
+    is_premium
   from {{ ref('stg_users') }}
 )
 

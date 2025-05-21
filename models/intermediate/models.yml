@@ -1,23 +1,12 @@
 version: 2
 
 models:
-  - name: int_event_enriched
+  - name: int_funnel_stages
     description: |
-      Modelo intermedio “event_enriched”:
-      - Consume stg_events
-      - Enriquecido con dimensiones de usuario, curso y campaña
-      - Añade métricas reutilizables (ej. days_since_signup)
+      Cálculo de timestamps clave por etapa:
+      enrollment → view → completion → feedback
     columns:
-      - name: event_sk
-        tests:
-          - not_null
-          - unique
-      - name: user_sk
-        tests:
-          - not_null
-      - name: course_sk
-        tests:
-          - not_null
-      - name: campaign_sk
-      - name: days_since_signup
-        description: "Días desde el signup hasta el evento"
+      - name: first_enroll_dt;    tests:[not_null]
+      - name: first_view_dt
+      - name: first_completion_dt
+      - name: first_feedback_dt
