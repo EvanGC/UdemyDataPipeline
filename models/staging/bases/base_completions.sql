@@ -1,12 +1,21 @@
-{{ config(materialized='ephemeral') }}
+{{ config(
+    materialized     = 'incremental',
+    unique_key       = 'completion_id',
+    on_schema_change = 'append_new_columns'
+) }}
 
 select
-    completion_id as event_id,
+    completion_id,
     user_id,
     course_id,
     to_timestamp(completion_date) as event_timestamp,
-    'completion' as event_type,
-    null as event_subtype,
     score as completion_score,
     time_to_complete_days as completion_days
-from {{ source('bronze','completitions') }}
+from {{ source('bronze','completions') }}
+
+
+{% if is_incremental() %}
+  where completion_date > (
+    select max(event_timestamp) from {{ this }}
+  )
+{% endif %}

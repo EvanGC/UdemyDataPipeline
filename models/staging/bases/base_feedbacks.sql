@@ -1,12 +1,20 @@
-{{ config(materialized='ephemeral') }}
+{{ config(
+    materialized     = 'incremental',
+    unique_key       = 'feedback_id',
+    on_schema_change = 'append_new_columns'
+) }}
 
 select
-    feedback_id as event_id,
+    feedback_id,
     user_id,
     course_id,
     to_timestamp(submitted_at) as event_timestamp,
-    'feedback' as event_type,
-    null as event_subtype,
     rating as feedback_rating,
     helpful_votes as feedback_helpful_votes
 from {{ source('bronze','feedbacks') }}
+
+{% if is_incremental() %}
+  where submitted_at > (
+    select max(event_timestamp) from {{ this }}
+  )
+{% endif %}

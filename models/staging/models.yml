@@ -14,10 +14,6 @@ models:
         description: "Correo electrónico del usuario"
         tests:
           - not_null
-      - name: full_name
-        description: "Nombre del usuario"
-        tests:
-          - not_null
       - name: signup_date
         description: "Fecha de registro"
         tests:
@@ -147,178 +143,66 @@ models:
 
 
   - name: stg_events
-    description: |
-      Modelo de staging que consolida y enriquece todos los eventos:
-      - Une eventos de enrollment, completion, view, interaction y feedback
-      - Genera clave subrogada event_sk
-      - Deriva atributos de fecha/hora
-      - Enriquece con datos de campaña para enrollments
-      - Preserva atributos específicos de cada tipo de evento
+    description: >
+      "Unión completa de todos los eventos, con **todas** las columnas posibles.
+      Las no aplicables quedan `null` según `event_type`."
     columns:
       - name: event_sk
-        description: "Clave subrogada única del evento"
-        tests:
-          - not_null
-          - unique
-      - name: event_id
-        description: "ID original del evento desde la fuente correspondiente"
-        tests:
-          - not_null
-      - name: user_id
-        description: "ID de usuario."
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_users')
-              field: user_id
-
-      - name: course_id
-        description: "ID de curso."
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_courses')
-              field: course_id
-
-      - name: event_timestamp
-        description: "Marca de tiempo como TIMESTAMP."
-        tests:
-          - not_null
-      - name: event_date
-        description: "Fecha derivada del evento (día)."
-      - name: event_hour
-        description: "Hora derivada del evento."
+        tests: [not_null, unique]
       - name: event_type
-        description: "Tipo de evento."
-        tests:
+        tests: 
+          - not_null
           - accepted_values:
-              values: ['enrollment','completion','view','interaction','feedback']
-      - name: event_subtype
-        description: "Subtipo de evento."
-      - name: campaign_id
-        description: "ID de campaña (solo enrollments)."
-      - name: campaign_name
-        description: "Nombre de campaña (solo enrollments)."
-
-  - name: stg_enrollments
-    description: |
-      Staging de enrollments: limpia y castea columnas de la source `enrollments`.
-    columns:
-      - name: enrollment_id
-        tests:
+              values: ['enrollment', 'view', 'completion', 'feedback', 'interaction']
+      - name: event_id
+        tests: 
           - not_null
-          - unique
-
       - name: user_id
-        tests:
+        tests: 
           - not_null
-          - relationships:
-              to: ref('stg_users')
-              field: user_id
-
+          -  relationships: 
+                to: ref('stg_users') 
+                field: user_id
       - name: course_id
-        tests:
+        tests: 
           - not_null
-          - relationships:
-              to: ref('stg_courses')
+          - relationships: 
+              to: ref('stg_courses') 
               field: course_id
-
-      - name: enrollment_timestamp
-        tests:
-          - not_null
+      - name: event_timestamp
+        tests: [not_null]
       - name: campaign_id
       - name: enrollment_source
       - name: enrollment_is_trial
-        tests:
-          - accepted_values:
-              values: [true, false]
-
       - name: enrollment_completed
-        tests:
-          - accepted_values:
-              values: [true, false]
-
       - name: enrollment_updated_at
-
-  - name: stg_completitions
-    description: |
-      Staging de completions: limpia y castea columnas de la source `completions`.
-    columns:
-      - name: completion_id
-        tests:
-          - not_null
-          - unique
-      - name: user_id
-        tests:
-          - not_null
-      - name: course_id
-        tests:
-          - not_null
-      - name: completion_timestamp
-        tests:
-          - not_null
-      - name: completion_score
-        tests:
-          - not_null
-          - greater_than_or_equal_to:
-              value: 0
-      - name: completion_time_to_complete_days
-
-  - name: stg_views
-    description: |
-      Staging de views: limpia y castea columnas de la source `views`.
-    columns:
-      - name: view_id
-        tests:
-          - not_null
-          - unique
-      - name: user_id
-        tests:
-          - not_null
-      - name: course_id
-        tests:
-          - not_null
       - name: view_timestamp
-        tests:
-          - not_null
       - name: view_duration_seconds
-        tests:
-          - greater_than_or_equal_to:
-              value: 0
-
       - name: view_from_landing_page
-        tests:
-          - accepted_values:
-              values: [true, false]
-
       - name: view_session_id
-
-  - name: stg_feedbacks
-    description: |
-      Staging de feedbacks: limpia y castea columnas de la source `feedbacks`.
-    columns:
-      - name: feedback_id
-        tests:
-          - not_null
-          - unique
-      - name: user_id
-        tests:
-          - not_null
-      - name: course_id
-        tests:
-          - not_null
+      - name: completion_timestamp
+      - name: completion_score
+      - name: completion_time_to_complete_days
+      - name: completion_created_at
       - name: feedback_timestamp
-        tests:
-          - not_null
       - name: feedback_rating
-        tests:
-          - not_null
-          - accepted_values:
-              values: [1,2,3,4,5]
       - name: feedback_helpful_votes
+      - name: feedback_comment
       - name: feedback_created_at
       - name: feedback_updated_at
-
+      - name: interaction_timestamp
+      - name: interaction_type
+      - name: interaction_target_id
+      - name: interaction_channel
+      - name: interaction_device_type
+      - name: interaction_location
+      - name: interaction_referral_source
+      - name: interaction_session_duration_seconds
+      - name: interaction_session_id
+      - name: interaction_created_at
+      - name: interaction_updated_at
+      - name: interaction_event_category
+ 
   - name: stg_interactions
     description: |
       Staging de user_interactions: limpia y castea columnas de la source `user_interactions`.

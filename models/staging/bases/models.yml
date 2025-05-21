@@ -4,7 +4,7 @@ models:
   - name: base_enrollments
     description: "Modelo base que limpia y normaliza los eventos de inscripción a cursos"
     columns:
-      - name: event_id
+      - name: enrollment_id
         description: "Identificador único del evento de inscripción"
         tests:
           - not_null
@@ -40,11 +40,7 @@ models:
         tests:
           - accepted_values:
               values: [true, false]
-      - name: enrollment_completed
-        description: "Indica si el curso fue completado"
-        tests:
-          - accepted_values:
-              values: [true, false]
+
       - name: campaign_id
         description: "ID de la campaña asociada"
         tests:
@@ -55,7 +51,7 @@ models:
   - name: base_completions
     description: "Modelo base que limpia y normaliza los eventos de finalización de cursos"
     columns:
-      - name: event_id
+      - name: completion_id
         description: "Identificador único del evento de finalización"
         tests:
           - not_null
@@ -99,7 +95,7 @@ models:
   - name: base_feedbacks
     description: "Modelo base que limpia y normaliza los eventos de valoración de cursos"
     columns:
-      - name: event_id
+      - name: feedback_id
         description: "Identificador único de la valoración"
         tests:
           - not_null
@@ -138,7 +134,7 @@ models:
   - name: base_views
     description: "Modelo base que limpia y normaliza los eventos de visualización de cursos"
     columns:
-      - name: event_id
+      - name: view_id
         description: "Identificador único de la visualización"
         tests:
           - not_null
@@ -180,51 +176,4 @@ models:
       - name: view_session_id
         description: "Identificador de la sesión de visualización"
 
-  - name: base_interactions
-    description: "Modelo base que limpia y normaliza los eventos de interacción con cursos"
-    columns:
-      - name: event_id
-        description: "Identificador único de la interacción"
-        tests:
-          - not_null
-          - unique
-      - name: user_id
-        description: "Identificador del usuario que interactuó"
-        tests:
-          - relationships:
-              to: source('bronze','users')
-              field: user_id
-      - name: course_id
-        description: "Identificador del curso interactuado"
-        tests:
-          - relationships:
-              to: source('bronze','courses')
-              field: course_id
-      - name: event_timestamp
-        description: "Fecha y hora de la interacción"
-        tests:
-          - not_null
-      - name: event_type
-        description: "Tipo de evento, siempre 'interaction'"
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['interaction']
-      - name: event_subtype
-        description: "Tipo específico de interacción"
-      - name: interaction_device
-        description: "Dispositivo desde el que se interactuó"
-      - name: interaction_location
-        description: "Ubicación geográfica del usuario"
-      - name: interaction_source
-        description: "Origen de la interacción"
-      - name: interaction_duration
-        description: "Duración de la sesión en segundos"
-        tests:
-          - greater_than_or_equal_to:
-              value: 0
-      - name: interaction_session_id
-        description: "Identificador de la sesión"
-      - name: interaction_category
-        description: "Categoría de la interacción"
   

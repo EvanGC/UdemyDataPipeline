@@ -1,6 +1,5 @@
 {{ config(
     materialized = 'incremental',
-    schema = 'silver',
     unique_key = 'interaction_id',
     on_schema_change = 'append_new_columns'
 ) }}
