@@ -32,7 +32,7 @@ def _create_resource_for_csv(filepath: str, table_name: str, write_disposition_s
     def _single_csv_loader():
         print(f"Procesando archivo: {filepath} para la tabla: {table_name}")
         try:
-            df = pd.read_csv(filepath, encoding='utf-8', sep=',') # Ajusta sep=',' u otros según necesidad
+            df = pd.read_csv(filepath, encoding='utf-8', sep=';') # Ajusta sep=',' u otros según necesidad
             if df.empty:
                 print(f"Advertencia: El archivo CSV '{filepath}' está vacío o solo contiene cabeceras. No se generarán datos para la tabla '{table_name}'.")
                 # No hacer yield si está vacío, dlt no creará la tabla.
