@@ -39,7 +39,6 @@ with
       user_id,
       course_id,
       event_timestamp,
-      -- Enrollment specific columns
       campaign_id,
       enrollment_source,
       enrollment_is_trial,
