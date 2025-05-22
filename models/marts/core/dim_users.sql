@@ -1,4 +1,4 @@
-{{ config(materialized='table', schema='gold') }}
+{{ config(materialized='table') }}
 
 with src as (
   select

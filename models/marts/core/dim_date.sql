@@ -1,4 +1,4 @@
-{{ config(materialized='table', schema='gold') }}
+{{ config(materialized='table') }}
 
 with dates as (
   select
@@ -7,9 +7,9 @@ with dates as (
 ),
 
 calendar as (
-  select
+  select distinct
     date_key:: date as date_key,
-    date_trunc('month', date_key)::date as month,
+    date_part('month', date_key) as month,
     date_part('week', date_key) as week_of_year,
     date_part('year', date_key) as year,
     date_part('dow', date_key) as day_of_week

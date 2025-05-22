@@ -1,6 +1,5 @@
 {{ config(
     materialized='incremental',
-    schema='gold',
     unique_key='event_sk',
     on_schema_change='sync_all_columns'
 ) }}
@@ -11,6 +10,7 @@ with events as (
 views as (
   select
     event_sk,
+    event_type,
     case when event_type = 'view' then 1 else 0 end as did_view,
     0 as did_enroll,
     0 as did_complete,
@@ -21,6 +21,7 @@ views as (
 enrolls as (
   select
     event_sk,
+    event_type,
     0 as did_view,
     1 as did_enroll,
     0 as did_complete,
@@ -31,6 +32,7 @@ enrolls as (
 completes as (
   select
     event_sk,
+    event_type,
     0 as did_view,
     0 as did_enroll,
     1 as did_complete,
@@ -41,6 +43,7 @@ completes as (
 feedbacks as (
   select
     event_sk,
+    event_type,
     0 as did_view,
     0 as did_enroll,
     0 as did_complete,
@@ -58,6 +61,7 @@ aggregated as (
   select
     e.user_id,
     e.course_id,
+    e.event_type,
     min(e.event_timestamp) as first_event_time,
     sum(did_view)    as total_views,
     sum(did_enroll)  as total_enrolls,
@@ -65,18 +69,12 @@ aggregated as (
     sum(did_feedback) as total_feedbacks
   from {{ ref('stg_events') }} e
   left join base b using (event_sk)
-  group by 1,2
+  group by 1,2,3
 )
 
 select
-  a.*,
-  c.category,
-  u.marketing_source,
-  c.course_id         as course_key,
-  u.user_id           as user_key
+  a.*
 from aggregated a
-join {{ ref('dim_courses') }} c using (course_id)
-join {{ ref('dim_users') }} u using (user_id)
 
 {% if is_incremental() %}
   where a.first_event_time > (
