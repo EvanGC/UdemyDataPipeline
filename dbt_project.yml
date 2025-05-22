@@ -41,8 +41,19 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   UdemyDataPipeline:
     staging:
+      bases:
+        +materialized: table
+        +schema: "silver"
+        +database: "ALUMNO5_DEV_SILVER_DB"
       +materialized: view
+      + schema: "silver"
       +database: "ALUMNO5_DEV_SILVER_DB"
     marts:
-      +materialized: table
-      +database: "ALUMNO5_DEV_GOLD_DB"
+      core:
+        +materialized: table
+        +schema: "gold"
+        +database: "ALUMNO5_DEV_GOLD_DB"
+      marketing:
+        +materialized: table
+        +schema: "gold"
+        +database: "ALUMNO5_DEV_GOLD_DB"
