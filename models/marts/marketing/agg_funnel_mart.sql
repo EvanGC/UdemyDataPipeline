@@ -1,7 +1,7 @@
-{{ config(materialized='table', schema='gold') }}
+{{ config(materialized='table') }}
 
 WITH base AS (
-  SELECT * FROM {{ ref('fct_user_course_funnel') }}
+  SELECT * FROM {{ ref('agg_user_course_funnel') }}
 ),
 
 per_course AS (
@@ -22,34 +22,25 @@ SELECT
   course_key,
   category,
   marketing_source,
-  stage,
-  value,
-  CASE
-    WHEN stage = 'enrolled' THEN
-      -- If enrolled_users > 0 for this stage, it's 100% of itself. Otherwise, 0%.
-      CASE WHEN value > 0 THEN 100.00 ELSE 0.00 END
-    ELSE
-      -- For other stages, calculate percentage of enrolled_users.
-      -- Use NULLIF to prevent division by zero, resulting in NULL if no enrollments.
-      -- Multiply by 100.0 to ensure floating point arithmetic before division for precision.
-      ROUND(value::NUMERIC * 100.0 / NULLIF(enrolled_users, 0), 2)
-  END AS pct_of_enrolled
+  total_users_in_segment,
+  enrolled_users,
+  viewed_users,
+  completed_users,
+  feedback_users,
+  ROUND(
+    (enrolled_users * 1.0 / NULLIF(total_users_in_segment, 0)) * 100, 2
+  ) AS enrollment_rate,
+  ROUND(
+    (viewed_users * 1.0 / NULLIF(total_users_in_segment, 0)) * 100, 2
+  ) AS view_rate,
+  ROUND(
+    (completed_users * 1.0 / NULLIF(total_users_in_segment, 0)) * 100, 2
+  ) AS completion_rate,
+  ROUND(
+    (feedback_users * 1.0 / NULLIF(total_users_in_segment, 0)) * 100, 2
+  ) AS feedback_rate
 FROM per_course
-CROSS JOIN LATERAL (
-  VALUES
-    ('enrolled', enrolled_users), -- Ensured these are actual counts
-    ('viewed', viewed_users),
-    ('completed', completed_users),
-    ('feedback', feedback_users)
-) AS steps(stage, value)
 ORDER BY
   course_key,
   category,
-  marketing_source,
-  CASE stage
-    WHEN 'enrolled'  THEN 1
-    WHEN 'viewed'    THEN 2
-    WHEN 'completed' THEN 3
-    WHEN 'feedback'  THEN 4
-    ELSE 5 -- Should not happen with current VALUES clause
-  END
+  marketing_source
