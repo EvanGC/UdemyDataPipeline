@@ -1,0 +1,52 @@
+version: 2
+
+snapshots:
+  - name: users_snapshot
+    description: "Dimensión de usuarios: fuente única de verdad sobre el usuario."
+    columns:
+      - name: user_id
+        description: "ID original del usuario."
+        tests:
+          - not_null
+          - unique
+      - name: email
+        tests:
+          - not_null
+      - name: signup_date
+        description: "Fecha de registro."
+        tests:
+          - not_null
+      - name: marketing_source
+        description: "Fuente de adquisición."
+
+  - name: courses_snapshot
+    description: "Dimensión de cursos: detalles de cada curso."
+    columns:
+      - name: course_id
+        tests:
+          - not_null
+          - unique
+      - name: category
+      - name: level
+      - name: price
+        tests:
+          - greater_than_or_equal_to:
+              value: 0
+
+  - name: instructors_snapshot
+    description: "Dimensión de instructores: detalles de cada instructor."
+    columns:
+      - name: instructor_sk
+        tests:
+          - not_null
+          - unique
+      - name: instructor_id
+        tests:
+          - not_null
+          - unique
+      - name: name
+      - name: bio
+      - name: rating
+        tests:
+          - greater_than_or_equal_to:
+              value: 0
