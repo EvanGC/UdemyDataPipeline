@@ -1,3 +1,14 @@
 version: 2
 
 models:
+  - name: agg_funnel_mart
+    description: |
+      This model aggregates the funnel data from the marketing mart.
+      It provides a summary of the funnel stages and their respective counts.
+    columns:
+      - name: viewed_users
+        description: The number of users who viewed the content at this stage of the funnel.
+      - name: completed_users
+        description: The number of users who completed the content at this stage of the funnel.
+      - name: total_users_in_segment
+        description: The total number of users in the segment for this stage.
