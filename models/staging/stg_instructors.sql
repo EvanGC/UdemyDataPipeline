@@ -1,8 +1,8 @@
-{{ config(materialized='view', schema='silver') }}
+{{ config(materialized='view') }}
 
 with src as (
     select
-      instructor_id :: int as instructor_id,
+      cast(instructor_id as int) as instructor_id,
       full_name,
       expertise,
       cast(rating as float) as rating,

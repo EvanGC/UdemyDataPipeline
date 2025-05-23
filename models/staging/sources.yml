@@ -40,7 +40,7 @@ sources:
           - name: updated_at
             description: "Fecha de última actualización"
 
-      - name: completitions
+      - name: completions
         description: "Registros de finalización de cursos por los usuarios"
         loaded_at_field: completion_date
         columns:

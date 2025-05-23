@@ -1,0 +1,15 @@
+version: 2
+
+models:
+
+  - name: agg_funnel
+    description: "Embudo: cuentas de user-course en cada etapa según lógica raw."
+    columns:
+      - name: funnel_stage
+        tests:
+          - not_null
+      - name: usercourse_count
+        tests:
+          - not_null
+          - greater_than_or_equal_to: 
+              value: 1

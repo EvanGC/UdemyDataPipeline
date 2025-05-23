@@ -1,80 +1,113 @@
-{{ config(materialized='view', schema='silver') }}
+{{ config(materialized='view') }}
 
-with enroll as (
-  select
-    event_id,
-    user_id,
-    course_id,
-    event_timestamp,
-    'enrollment' as event_type,
-    campaign_id
-  from {{ ref('base_enrollments') }}
-),
+{%- set shared_columns = [
+    'event_sk',
+    'event_type',
+    'event_id',
+    'user_id',
+    'course_id',
+    'event_timestamp'
+] -%}
 
-comp as (
-  select
-    event_id,
-    user_id,
-    course_id,
-    event_timestamp,
-    'completion' as event_type,
-    null as campaign_id
-  from {{ ref('base_completions') }}
-),
+{%- set enrollment_columns = [
+    'campaign_id',
+    'enrollment_source',
+    'enrollment_is_trial',
+    'enrollment_updated_at'
+] -%}
 
-vw as (
-  select
-    event_id,
-    user_id,
-    course_id,
-    event_timestamp,
-    'view' as event_type,
-    null as campaign_id
-  from {{ ref('base_views') }}
-),
+{%- set view_columns = [
+    'view_duration'
+] -%}
 
-fb as (
-  select
-    event_id,
-    user_id,
-    course_id,
-    event_timestamp,
-    'feedback' as event_type,
-    null as campaign_id
-  from {{ ref('base_feedbacks') }}
-),
+{%- set completion_columns = [
+    'completion_score',
+    'completion_days'
+] -%}
 
-ui as (
-  select
-    event_id,
-    user_id,
-    course_id,
-    event_timestamp,
-    'interaction' as event_type,
-    null as campaign_id
-  from {{ ref('base_interactions') }}
-),
+{%- set feedback_columns = [
+    'feedback_rating',
+    'feedback_helpful_votes'
+] -%}
 
-all_events as (
-  select * from enroll
-  union all select * from comp
-  union all select * from vw
-  union all select * from fb
-  union all select * from ui
-)
+with
+  enrollments as (
+    select
+      {{ dbt_utils.generate_surrogate_key(['enrollment_id','user_id','course_id','event_timestamp']) }} as event_sk,
+      'enrollment' as event_type,
+      enrollment_id as event_id,
+      user_id,
+      course_id,
+      event_timestamp,
+      campaign_id,
+      enrollment_source,
+      enrollment_is_trial,
+      enrollment_updated_at,
+      {{ null_columns(view_columns) }},
+      {{ null_columns(completion_columns) }},
+      {{ null_columns(feedback_columns) }}
+    from {{ ref('base_enrollments') }}
+  ),
 
-select
-  {{ dbt_utils.generate_surrogate_key([
-      'event_type',
-      'event_id',
-      'user_id',
-      'course_id',
-      'event_timestamp'
-    ]) }} as event_sk,
-  event_type,
-  event_id,
-  user_id,
-  course_id,
-  event_timestamp,
-  campaign_id
-from all_events
+  views as (
+    select
+      {{ dbt_utils.generate_surrogate_key(['view_id','user_id','course_id','event_timestamp']) }} as event_sk,
+      'view' as event_type,
+      view_id as event_id,
+      user_id,
+      course_id,
+      event_timestamp,
+      -- Null columns for enrollment
+      {{ null_columns(enrollment_columns) }},
+      -- View specific columns
+      view_duration,
+      -- Null columns for other event types
+      {{ null_columns(completion_columns) }},
+      {{ null_columns(feedback_columns) }}
+    from {{ ref('base_views') }}
+  ),
+
+  completions as (
+    select
+      {{ dbt_utils.generate_surrogate_key(['completion_id','user_id','course_id','event_timestamp']) }} as event_sk,
+      'completion' as event_type,
+      completion_id as event_id,
+      user_id,
+      course_id,
+      event_timestamp,
+      -- Null columns for enrollment and views
+      {{ null_columns(enrollment_columns) }},
+      {{ null_columns(view_columns) }},
+      -- Completion specific columns
+      completion_score,
+      completion_days,
+      -- Null columns for other event types
+      {{ null_columns(feedback_columns) }}
+    from {{ ref('base_completions') }}
+  ),
+
+  feedbacks as (
+    select
+      {{ dbt_utils.generate_surrogate_key(['feedback_id','user_id','course_id','event_timestamp']) }} as event_sk,
+      'feedback' as event_type,
+      feedback_id as event_id,
+      user_id,
+      course_id,
+      event_timestamp,
+      -- Null columns for other event types
+      {{ null_columns(enrollment_columns) }},
+      {{ null_columns(view_columns) }},
+      {{ null_columns(completion_columns) }},
+      -- Feedback specific columns
+      feedback_rating,
+      feedback_helpful_votes
+    from {{ ref('base_feedbacks') }}
+  )
+
+select * from enrollments
+union all 
+select * from views
+union all 
+select * from completions
+union all 
+select * from feedbacks

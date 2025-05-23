@@ -1,4 +1,4 @@
-{% snapshot snap_instructors %}
+{% snapshot instructors_snapshot %}
 
 {{
   config(
